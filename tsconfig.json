@@ -1,0 +1,11 @@
+{
+    /* Base configuration. Do not edit this field. */
+    "extends": "./temp/tsconfig.cocos.json",
+
+    "ignoreDeprecations": "6.0",
+
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "allowImportingTsExtensions": true
+    }
+}

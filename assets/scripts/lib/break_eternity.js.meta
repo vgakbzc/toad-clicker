@@ -1,0 +1,17 @@
+{
+  "ver": "4.0.24",
+  "importer": "javascript",
+  "imported": true,
+  "uuid": "da3236a8-c757-486b-9978-4955a896d170",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "loadPluginInEditor": false,
+    "loadPluginInWeb": true,
+    "loadPluginInNative": true,
+    "loadPluginInMiniGame": true,
+    "isPlugin": false,
+    "executionScope": "global",
+    "simulateGlobals": true
+  }
+}
