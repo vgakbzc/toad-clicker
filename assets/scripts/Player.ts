@@ -2,7 +2,7 @@ import { _decorator, Component, Node, RichText } from "cc";
 const { ccclass, property } = _decorator;
 
 import Decimal from "./lib/break_eternity.ts";
-import { integerFormat } from "./lib/break_eternity_formatting.ts";
+import { floatFormat, integerFormat } from "./lib/break_eternity_formatting.ts";
 
 @ccclass("Player")
 export class Player extends Component {
@@ -27,7 +27,11 @@ export class Player extends Component {
 
     private updateDisplay() {
         if (this.toadCountText) {
-            this.toadCountText.string = integerFormat(this.toadCount);
+            this.toadCountText.string = floatFormat(this.toadCount);
         }
+    }
+
+    public canAfford(toad: Decimal): boolean {
+        return this.toadCount.gte(toad);
     }
 }
