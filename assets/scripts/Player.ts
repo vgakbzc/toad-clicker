@@ -3,12 +3,14 @@ const { ccclass, property } = _decorator;
 
 import Decimal from "./lib/break_eternity.ts";
 import { floatFormat, integerFormat } from "./lib/break_eternity_formatting.ts";
+import { saveData } from "./saveData";
 
 @ccclass("Player")
 export class Player extends Component {
     @property(RichText)
     public toadCountText: RichText | null = null;
 
+    @saveData
     public toadCount: Decimal = new Decimal(0);
 
     start() {}

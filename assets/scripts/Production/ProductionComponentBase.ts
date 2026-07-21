@@ -3,6 +3,7 @@ import { ProductionUpgradeHandler } from "./ProductionUpgradeHandler";
 import { Decimal } from "../lib/break_eternity";
 import { floatFormat, integerFormat } from "../lib/break_eternity_formatting";
 import { Player } from "../Player";
+import { saveData } from "../saveData";
 const { ccclass, property } = _decorator;
 
 @ccclass("ProductionComponent")
@@ -14,7 +15,15 @@ export class ProductionComponentBase extends Component {
     protected costLinearScaling: Decimal = new Decimal(10);
     // accumulated cost = linear *[n + cubic*(n-1)^3 + exponent*base^(n-gate)]
 
+    @saveData
     protected level: Decimal = new Decimal(0);
+
+    public getLevel(): Decimal {
+        return this.level;
+    }
+    public setLevel(value: Decimal): void {
+        this.level = value;
+    }
 
     protected baseProduction: Decimal = new Decimal(0);
 

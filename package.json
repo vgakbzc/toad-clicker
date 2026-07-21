@@ -3,5 +3,9 @@
   "creator": {
     "version": "3.8.8"
   },
-  "uuid": "b0849ff7-5817-4560-9bad-43f1a27e01f8"
+  "uuid": "b169b49e-3f4a-44d8-9d80-7d5737c2f5d9",
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "reflect-metadata": "^0.2.2"
+  }
 }
