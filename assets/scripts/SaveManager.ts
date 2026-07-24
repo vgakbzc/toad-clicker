@@ -1,24 +1,23 @@
-import { _decorator, Component, Node, sys } from "cc";
+import { _decorator, Component, EditBox, Node, sys } from "cc";
 import {
-    getSaveDataKeys,
-    serializeValue,
-    deserializeValue,
-    ClassRegistry,
-} from "./saveData";
+    copyToClipboard,
+    DefaultSave,
+    SaveData,
+    SaveDataManager,
+} from "./SaveData";
+import { instanceToPlain, plainToInstance } from "class-transformer";
 const { ccclass } = _decorator;
 
 const SAVE_KEY = "toad_clicker_save";
 const AUTO_SAVE_INTERVAL = 30;
-
-interface SaveEntry {
-    node: string; // node path from scene root for identification
-    component: string; // component class name
-    data: Record<string, any>;
-}
+const LOAD_TIMEOUT = 5;
+const LOAD_PHASE_REQUIRED = 1;
 
 @ccclass("SaveManager")
 export class SaveManager extends Component {
     private timer: number = 0;
+    private loadCooldown: number = 0;
+    private loadPhase: number = 0;
 
     start() {
         this.load();
@@ -31,16 +30,23 @@ export class SaveManager extends Component {
             this.timer = 0;
             this.save();
         }
+        if (this.loadPhase > 0) {
+            this.loadCooldown += dt;
+            if (this.loadCooldown >= LOAD_TIMEOUT) {
+                this.loadCooldown = 0;
+                this.loadPhase = 0;
+            }
+        }
     }
 
     save(): void {
-        const root = this.node.parent!;
-        const entries: SaveEntry[] = [];
+        sys.localStorage.setItem(SAVE_KEY, SaveData.serialize());
+        console.log("[SaveManager] Saved", SaveData.serialize());
+    }
 
-        this.collect(root, "", entries);
-
-        sys.localStorage.setItem(SAVE_KEY, JSON.stringify(entries));
-        console.log("[SaveManager] Saved", entries.length, "components");
+    saveToClipboard(): void {
+        let saveString = SaveData.serialize();
+        copyToClipboard(saveString);
     }
 
     load(): void {
@@ -49,70 +55,37 @@ export class SaveManager extends Component {
             console.log("[SaveManager] No save found");
             return;
         }
+        SaveData.merge(SaveDataManager.deserialize(raw));
+    }
 
-        try {
-            const entries: SaveEntry[] = JSON.parse(raw);
-            const root = this.node.parent!;
-
-            for (const entry of entries) {
-                const target = root.getChildByPath(entry.node);
-                if (!target) {
-                    console.warn("[SaveManager] Missing node:", entry.node);
-                    continue;
-                }
-                const comp = target.getComponent(
-                    ClassRegistry.get(entry.component),
-                );
-                if (!comp) {
-                    console.warn(
-                        "[SaveManager] Missing component:",
-                        entry.component,
-                        "on",
-                        entry.node,
-                    );
-                    continue;
-                }
-                for (const key of Object.keys(entry.data)) {
-                    (comp as any)[key] = deserializeValue(entry.data[key]);
+    loadFromEditbox(): void {
+        console.log(
+            "[SaveManager] Loading from editbox activated, phase: " +
+                this.loadPhase,
+        );
+        if (this.loadPhase < LOAD_PHASE_REQUIRED) {
+            ++this.loadPhase;
+        } else {
+            this.loadPhase = 0;
+            let editbox = this.node
+                .getParent()
+                ?.getChildByPath("/Canvas/SaveMenu/EditBox")
+                ?.getComponent<EditBox>(EditBox);
+            let raw = editbox?.string;
+            console.log("[SaveManager] Raw Data: ", raw);
+            if (raw) {
+                SaveData.reset();
+                SaveData.merge(SaveDataManager.deserialize(raw));
+                if (editbox) {
+                    editbox.string = "";
                 }
             }
-            console.log("[SaveManager] Loaded", entries.length, "components");
-        } catch (e) {
-            console.warn("[SaveManager] Corrupted save, starting fresh", e);
-            sys.localStorage.removeItem(SAVE_KEY);
         }
     }
 
     resetSave(): void {
         sys.localStorage.removeItem(SAVE_KEY);
         console.log("[SaveManager] Save reset");
-    }
-
-    /** Walk the scene tree and collect @saveData properties from every component */
-    private collect(node: Node, path: string, out: SaveEntry[]): void {
-        const currentPath = path ? path + "/" + node.name : node.name;
-
-        for (const comp of node.components) {
-            if (comp === this) continue; // skip SaveManager itself
-
-            const keys = getSaveDataKeys(comp);
-            if (keys.length === 0) continue;
-
-            const data: Record<string, any> = {};
-            for (const key of keys) {
-                data[key] = serializeValue((comp as any)[key]);
-            }
-
-            out.push({
-                node: currentPath,
-                component: comp.constructor.name,
-                data,
-            });
-        }
-
-        for (const child of node.children) {
-            this.collect(child, currentPath, out);
-        }
     }
 
     private scheduleAutoSave(): void {

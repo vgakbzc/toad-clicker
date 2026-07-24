@@ -3,6 +3,7 @@
 /**
  * A LRU cache intended for caching pure functions.
  */
+
 export class LRUCache {
     map: Map<any, any>;
     first: any;
