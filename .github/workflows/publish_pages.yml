@@ -21,7 +21,7 @@ jobs:
       - name: Copy files to docs folder
         run: |
           mkdir -p docs
-          cp -r build/desktop/* docs/
+          cp -r build/web-desktop/* docs/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
