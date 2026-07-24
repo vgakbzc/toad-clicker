@@ -25,6 +25,7 @@ jobs:
         run: |
           mkdir -p docs
           cp -r build/web-desktop/* docs/
+          touch docs/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
