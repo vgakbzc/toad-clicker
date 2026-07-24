@@ -3,7 +3,7 @@ import { ProductionUpgradeHandler } from "./ProductionUpgradeHandler";
 import { Decimal } from "../lib/break_eternity";
 import { floatFormat, integerFormat } from "../lib/break_eternity_formatting";
 import { Player } from "../Player";
-import { saveData } from "../saveData";
+import { SaveData } from "../SaveData";
 const { ccclass, property } = _decorator;
 
 @ccclass("ProductionComponent")
@@ -15,14 +15,11 @@ export class ProductionComponentBase extends Component {
     protected costLinearScaling: Decimal = new Decimal(10);
     // accumulated cost = linear *[n + cubic*(n-1)^3 + exponent*base^(n-gate)]
 
-    @saveData
-    protected level: Decimal = new Decimal(0);
-
     public getLevel(): Decimal {
-        return this.level;
+        return SaveData.getValue(this, "level");
     }
     public setLevel(value: Decimal): void {
-        this.level = value;
+        SaveData.setValue(this, "level", value);
     }
 
     protected baseProduction: Decimal = new Decimal(0);
@@ -62,6 +59,8 @@ export class ProductionComponentBase extends Component {
     }
 
     start() {
+        // register level data
+        SaveData.registerEntry(this, "level", new Decimal(0));
         // register purchase label to mode updater
         this.productionUpgradeHandler = this.node
             .getParent()
@@ -120,8 +119,8 @@ export class ProductionComponentBase extends Component {
                 if (
                     this.player?.canAfford(
                         this.getAccumulatedCost(
-                            this.level.add(newUpgradeLevel),
-                        ).minus(this.getAccumulatedCost(this.level)),
+                            this.getLevel().add(newUpgradeLevel),
+                        ).minus(this.getAccumulatedCost(this.getLevel())),
                     )
                 ) {
                     upgradeLevel = newUpgradeLevel;
@@ -132,8 +131,8 @@ export class ProductionComponentBase extends Component {
     }
     getUpgradeCost(): Decimal {
         return this.getAccumulatedCost(
-            this.level.add(this.getAffordableUpgradeLevel()),
-        ).minus(this.getAccumulatedCost(this.level));
+            this.getLevel().add(this.getAffordableUpgradeLevel()),
+        ).minus(this.getAccumulatedCost(this.getLevel()));
     }
 
     update(deltaTime: number) {
@@ -157,9 +156,9 @@ export class ProductionComponentBase extends Component {
             priceComponent.string += " [+" + integerFormat(upgradeLevel) + "]";
         }
         // produce toad
-        let milestoneMult = this.level.div(10).floor().add(1).pow(0.85);
+        let milestoneMult = this.getLevel().div(10).floor().add(1).pow(0.85);
         let toadPerSecond = this.baseProduction
-            .times(this.level)
+            .times(this.getLevel())
             .mul(milestoneMult);
         // update stats label
         if (this.statsLabel) {
@@ -171,13 +170,13 @@ export class ProductionComponentBase extends Component {
                 "Total Production: " +
                 floatFormat(toadPerSecond) +
                 "/s [" +
-                integerFormat(this.level) +
+                integerFormat(this.getLevel()) +
                 "]\n";
             let milestoneInfo: string =
                 "Milestone: Production x" +
                 floatFormat(milestoneMult) +
                 " [" +
-                integerFormat(this.level) +
+                integerFormat(this.getLevel()) +
                 "]";
             this.statsLabel.string =
                 eachProduction + totalProduction + milestoneInfo;
@@ -194,7 +193,7 @@ export class ProductionComponentBase extends Component {
         let upgradeCost = this.getUpgradeCost();
         if (this.player?.canAfford(upgradeCost)) {
             this.player.addToad(upgradeCost.neg());
-            this.level = this.level.add(upgradeLevel);
+            this.setLevel(this.getLevel().add(upgradeLevel));
         }
     }
 }
