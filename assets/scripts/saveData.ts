@@ -87,7 +87,6 @@ function toPlain<T extends Object>(value: T): any {
         return value.map((item) => toPlain(item));
     }
 
-    // Try finding the class name through Cocos
     let className: string = value.constructor.name;
 
     if (className && className !== "Object" && className !== "Array") {
