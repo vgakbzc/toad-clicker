@@ -5,6 +5,9 @@ on:
     branches:
       - master # Triggers the workflow whenever you push to the main branch
 
+permissions:
+    contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
