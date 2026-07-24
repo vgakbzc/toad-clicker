@@ -18,11 +18,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies and build
-        run: |
-          npm install
-          npm run build # Assumes this generates files in /build/desktop
-
       - name: Copy files to docs folder
         run: |
           mkdir -p docs
