@@ -69,11 +69,14 @@ function fallbackCopyText(text: string): boolean {
 }
 
 const localClassRegistry = {
-    Decimal: new Decimal(0).constructor,
     get(name: string): new () => any {
         return (this as any)[name];
     },
 };
+const registryObjectList = [new Decimal(0)];
+for (let object of registryObjectList) {
+    (localClassRegistry as any)[object.constructor.name] = object.constructor;
+}
 
 function toPlain<T extends Object>(value: T): any {
     if (value === null || value === undefined || typeof value !== "object") {
