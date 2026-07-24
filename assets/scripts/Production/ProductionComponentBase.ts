@@ -3,7 +3,7 @@ import { ProductionUpgradeHandler } from "./ProductionUpgradeHandler";
 import { Decimal } from "../lib/break_eternity";
 import { floatFormat, integerFormat } from "../lib/break_eternity_formatting";
 import { Player } from "../Player";
-import { SaveData } from "../SaveData";
+import { SaveData, SaveDataManager } from "../SaveData";
 const { ccclass, property } = _decorator;
 
 @ccclass("ProductionComponent")
@@ -60,7 +60,7 @@ export class ProductionComponentBase extends Component {
 
     start() {
         // register level data
-        SaveData.registerEntry(this, "level", new Decimal(0));
+        SaveDataManager.registerEntry(this, "level", new Decimal(0));
         // register purchase label to mode updater
         this.productionUpgradeHandler = this.node
             .getParent()
